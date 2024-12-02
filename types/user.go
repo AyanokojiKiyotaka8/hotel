@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,14 +23,31 @@ type User struct {
 	EncPassword string				`bson:"EncPassword" json:"-"`
 }
 
-type GetUserFromParams struct {
+type CreateUserParams struct {
 	FirstName 	string 	`json:"firstName"`
 	LastName 	string 	`json:"lastName"`
 	Email 		string 	`json:"email"`
 	Password	string	`json:"password"`
 }
 
-func NewUserFromParams(u *GetUserFromParams) (*User, error) {
+type UpdateUserParams struct {
+	FirstName 	string 	`json:"firstName"`
+	LastName 	string 	`json:"lastName"`
+}
+
+func (p *UpdateUserParams) ToBSON() bson.M {
+	m := bson.M{}
+	if len(p.FirstName) > 0 {
+		m["firstName"] = p.FirstName
+	}
+	if len(p.LastName) > 0 {
+		m["lastName"] = p.LastName
+	}
+	
+	return m
+} 
+
+func NewUserFromParams(u *CreateUserParams) (*User, error) {
 	encpw, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -43,19 +61,19 @@ func NewUserFromParams(u *GetUserFromParams) (*User, error) {
 	}, nil
 }
 
-func (u *GetUserFromParams) Validate() []string {
-	var errors []string 
+func (u *CreateUserParams) Validate() map[string]string {
+	errors := map[string]string{}
 	if len(u.FirstName) < minFirstNameLen {
-		errors = append(errors, fmt.Sprintf("firstName length should be at least %d characters", minFirstNameLen))
+		errors["firstName"] =fmt.Sprintf("firstName length should be at least %d characters", minFirstNameLen)
 	}
 	if len(u.LastName) < minLastNameLen {
-		errors = append(errors, fmt.Sprintf("lastName length should be at least %d characters", minLastNameLen))
+		errors["lastName"] = fmt.Sprintf("lastName length should be at least %d characters", minLastNameLen)
 	}
 	if len(u.Password) < minPasswordLen {
-		errors = append(errors, fmt.Sprintf("password length should be at least %d characters", minPasswordLen))
+		errors["password"] = fmt.Sprintf("password length should be at least %d characters", minPasswordLen)
 	}
 	if !isEmailValid(u.Email) {
-		errors = append(errors, fmt.Sprintf("email is invalid"))
+		errors["email"] = fmt.Sprintf("email is invalid")
 	}
 
 	return errors
@@ -65,3 +83,4 @@ func isEmailValid(email string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return re.MatchString(email)
 }
+
