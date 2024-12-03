@@ -6,6 +6,8 @@ import (
 	"github.com/AyanokojiKiyotaka8/booking.git/db"
 	"github.com/AyanokojiKiyotaka8/booking.git/types"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -80,7 +82,17 @@ func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	err := h.userStore.UpdateUser(c.Context(), id, &params)
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": oid}
+	update := bson.M{
+		"$set": params.ToBSON(),
+	}
+
+	err = h.userStore.UpdateUser(c.Context(), filter, update)
 	if err != nil {
 		return err
 	}

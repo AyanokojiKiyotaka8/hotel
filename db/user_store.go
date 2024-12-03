@@ -10,8 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const userColl = "users"
-
 type Dropper interface {
 	Drop(context.Context) error
 }
@@ -23,7 +21,7 @@ type UserStore interface {
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	DeleteUser(context.Context, string) error
-	UpdateUser(context.Context, string, *types.UpdateUserParams) error
+	UpdateUser(ctx context.Context, filter bson.M, update bson.M) error
 }
 
 type MongoUserStore struct {
@@ -34,7 +32,7 @@ type MongoUserStore struct {
 func NewMongoUserStore(client *mongo.Client, dbname string) *MongoUserStore {
 	return &MongoUserStore{
 		client: client,
-		coll: client.Database(dbname).Collection(userColl),
+		coll: client.Database(dbname).Collection("users"),
 	}
 }
 
@@ -91,17 +89,7 @@ func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	return err
 }
 
-func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, params *types.UpdateUserParams) error {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-
-	filter := bson.M{"_id": oid}
-	update := bson.M{
-		"$set": params.ToBSON(),
-	}
-
-	_, err = s.coll.UpdateOne(ctx, filter, update)
+func (s *MongoUserStore) UpdateUser(ctx context.Context, filter bson.M, update bson.M) error {
+	_, err := s.coll.UpdateOne(ctx, filter, update)
 	return err
 }
