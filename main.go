@@ -19,24 +19,37 @@ var config = fiber.Config{
 }
 
 func main() {
+	// Server addresses
 	listenAddr := flag.String("listenAddr", ":3000", "The listen address of the API server")
 	flag.Parse()
 
+	// Database clients
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(db.DBURI))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// App and API's
 	app := fiber.New(config)
 	apiv1 := app.Group("/api/v1")
 
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
+	// db
+	hotelStore := db.NewMongoHotelStore(client, db.DBNAME)
+	roomStore := db.NewMongoRoomStore(client, db.DBNAME, hotelStore)
 
+	// Handlers
+	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
+	hotelHandler := api.NewHotelHandler(hotelStore, roomStore)
+
+	// User API's
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
 	apiv1.Post("/user", userHandler.HandlePostUser)
 	apiv1.Get("/user", userHandler.HandleGetUsers)
 	apiv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 	apiv1.Put("/user/:id", userHandler.HandlePutUser)
+
+	// Hotel API's
+	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
 
 	app.Listen(*listenAddr)
 }

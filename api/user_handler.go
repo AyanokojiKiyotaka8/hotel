@@ -23,8 +23,13 @@ func NewUserHandler(userStore db.UserStore) *UserHandler {
 
 func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	id := c.Params("id")
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
 
-	user, err := h.userStore.GetUserByID(c.Context(), id)
+	filter := bson.M{"_id": oid}
+	user, err := h.userStore.GetUser(c.Context(), filter)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return c.JSON(map[string]string{"error:": "not found"})
@@ -58,7 +63,8 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
-	users, err := h.userStore.GetUsers(c.Context())
+	filter := bson.M{}
+	users, err := h.userStore.GetUsers(c.Context(), filter)
 	if err != nil {
 		return err
 	}
@@ -68,7 +74,13 @@ func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 
 func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 	id := c.Params("id")
-	if err := h.userStore.DeleteUser(c.Context(), id); err != nil {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": oid}
+	if err := h.userStore.DeleteUser(c.Context(), filter); err != nil {
 		return err
 	}
 

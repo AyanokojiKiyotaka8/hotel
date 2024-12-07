@@ -17,11 +17,11 @@ type Dropper interface {
 type UserStore interface {
 	Dropper
 
-	GetUserByID(context.Context, string) (*types.User, error)
+	GetUser(context.Context, bson.M) (*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
-	GetUsers(context.Context) ([]*types.User, error)
-	DeleteUser(context.Context, string) error
-	UpdateUser(ctx context.Context, filter bson.M, update bson.M) error
+	GetUsers(context.Context, bson.M) ([]*types.User, error)
+	DeleteUser(context.Context, bson.M) error
+	UpdateUser(context.Context, bson.M, bson.M) error
 }
 
 type MongoUserStore struct {
@@ -41,14 +41,9 @@ func (s *MongoUserStore) Drop(ctx context.Context) error {
 	return s.coll.Drop(ctx)
 }
 
-func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.User, error) {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *MongoUserStore) GetUser(ctx context.Context, filter bson.M) (*types.User, error) {
 	var user types.User
-	if err := s.coll.FindOne(ctx, bson.M{"_id": oid}).Decode(&user); err != nil {
+	if err := s.coll.FindOne(ctx, filter).Decode(&user); err != nil {
 		return nil, err
 	}
 
@@ -65,8 +60,8 @@ func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*typ
 	return user, nil
 }
 
-func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
-	cur, err := s.coll.Find(ctx, bson.M{})
+func (s *MongoUserStore) GetUsers(ctx context.Context, filter bson.M) ([]*types.User, error) {
+	cur, err := s.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -79,13 +74,8 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
 	return users, nil
 }
 
-func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.coll.DeleteOne(ctx, bson.M{"_id": oid})
+func (s *MongoUserStore) DeleteUser(ctx context.Context, filter bson.M) error {
+	_, err := s.coll.DeleteOne(ctx, filter)
 	return err
 }
 
