@@ -45,15 +45,15 @@ func seed(name, location string, rating int) {
 
 	rooms := []types.Room{
 		{
-			Type: types.SingleRoomType,
+			Size: "small",
 			Price: 99.9,
 		},
 		{
-			Type: types.DeluxeRoomType,
+			Size: "kingsize",
 			Price: 199.9,
 		},
 		{
-			Type: types.SeaSideRoomType,
+			Size: "normal",
 			Price: 122.9,
 		},
 	}
