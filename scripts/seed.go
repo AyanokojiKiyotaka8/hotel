@@ -16,6 +16,7 @@ var (
 	err error
 	hotelStore *db.MongoHotelStore
 	roomStore *db.MongoRoomStore
+	userStore *db.MongoUserStore
 )
 
 func init() {
@@ -26,6 +27,7 @@ func init() {
 
 	hotelStore = db.NewMongoHotelStore(client, db.DBNAME)
 	roomStore = db.NewMongoRoomStore(client, db.DBNAME, hotelStore)
+	userStore = db.NewMongoUserStore(client, db.DBNAME)
 
 	if err := hotelStore.Drop(context.Background()); err != nil {
 		log.Fatal(err)
@@ -33,9 +35,12 @@ func init() {
 	if err := roomStore.Drop(context.Background()); err != nil {
 		log.Fatal(err)
 	}
+	if err := userStore.Drop(context.Background()); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func seed(name, location string, rating int) {
+func seedHotel(name, location string, rating int) {
 	hotel := types.Hotel{
 		Name: name,
 		Location: location,
@@ -72,8 +77,27 @@ func seed(name, location string, rating int) {
 	}
 }
 
+func seedUser(fname, lname, email string) {
+	user, err := types.NewUserFromParams(&types.CreateUserParams{
+		FirstName: fname,
+		LastName: lname,
+		Email: email,
+		Password: "qqq111www",
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = userStore.InsertUser(context.Background(), user)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
-	seed("Aaa", "Bbb", 1)
-	seed("Qqq", "Www", 2)
-	seed("Eee", "Rrr", 3)
+	seedHotel("Aaa", "Bbb", 1)
+	seedHotel("Qqq", "Www", 2)
+	seedHotel("Eee", "Rrr", 3)
+	seedUser("aaa", "bbb", "aaa@bbb.com")
 }

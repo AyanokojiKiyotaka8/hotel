@@ -7,6 +7,7 @@ import (
 
 	"github.com/AyanokojiKiyotaka8/booking.git/api"
 	"github.com/AyanokojiKiyotaka8/booking.git/db"
+	"github.com/AyanokojiKiyotaka8/booking.git/middleware"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -31,7 +32,8 @@ func main() {
 
 	// App and API's
 	app := fiber.New(config)
-	apiv1 := app.Group("/api/v1")
+	apiv1 := app.Group("/api/v1", middleware.JWTAuthentication)
+	auth := app.Group("/api")
 
 	// db
 	userStore := db.NewMongoUserStore(client, db.DBNAME)
@@ -46,6 +48,10 @@ func main() {
 	// Handlers
 	userHandler := api.NewUserHandler(userStore)
 	hotelHandler := api.NewHotelHandler(&store)
+	authHandler := api.NewAuthHandler(userStore)
+
+	// Auth
+	auth.Post("/auth", authHandler.HandleAuth)
 
 	// User API's
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
