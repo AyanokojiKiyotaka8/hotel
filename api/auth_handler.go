@@ -3,12 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/db"
+	"github.com/AyanokojiKiyotaka8/booking.git/types"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
@@ -26,6 +29,11 @@ type AuthParams struct {
 	Password 	string `json:"password"`
 }
 
+type AuthResponse struct {
+	User 	*types.User `json:"user"`
+	Token 	string		`json:"token"`
+}
+
 func (h *AuthHandler) HandleAuth(c *fiber.Ctx) error {
 	var params AuthParams
 	if err := c.BodyParser(&params); err != nil {
@@ -41,9 +49,28 @@ func (h *AuthHandler) HandleAuth(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.EncPassword), []byte(params.Password)); err != nil {
+	if !types.IsValidPassword(user.EncPassword, params.Password) {
 		return fmt.Errorf("wrong credentials")
 	}
 
-	return c.JSON(user)
+	resp := AuthResponse{
+		User: user,
+		Token: createToken(user),
+	}
+
+	return c.JSON(resp)
+}
+
+func createToken(user *types.User) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id": user.ID,
+		"email": user.Email,
+		"expires": time.Now().Add(3 * time.Hour).Unix(),
+	})
+	
+	tokenStr, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		fmt.Println(err)
+	}
+	return tokenStr
 }
