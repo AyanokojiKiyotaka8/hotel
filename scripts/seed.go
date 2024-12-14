@@ -12,11 +12,11 @@ import (
 )
 
 var (
-	client *mongo.Client
-	err error
+	client     *mongo.Client
+	err        error
 	hotelStore *db.MongoHotelStore
-	roomStore *db.MongoRoomStore
-	userStore *db.MongoUserStore
+	roomStore  *db.MongoRoomStore
+	userStore  *db.MongoUserStore
 )
 
 func init() {
@@ -42,23 +42,23 @@ func init() {
 
 func seedHotel(name, location string, rating int) {
 	hotel := types.Hotel{
-		Name: name,
+		Name:     name,
 		Location: location,
-		Rooms: []primitive.ObjectID{},
-		Rating: rating,
+		Rooms:    []primitive.ObjectID{},
+		Rating:   rating,
 	}
 
 	rooms := []types.Room{
 		{
-			Size: "small",
+			Size:  "small",
 			Price: 99.9,
 		},
 		{
-			Size: "kingsize",
+			Size:  "kingsize",
 			Price: 199.9,
 		},
 		{
-			Size: "normal",
+			Size:  "normal",
 			Price: 122.9,
 		},
 	}
@@ -80,9 +80,9 @@ func seedHotel(name, location string, rating int) {
 func seedUser(fname, lname, email string) {
 	user, err := types.NewUserFromParams(&types.CreateUserParams{
 		FirstName: fname,
-		LastName: lname,
-		Email: email,
-		Password: "qqq111www",
+		LastName:  lname,
+		Email:     email,
+		Password:  "qqq111www",
 	})
 
 	if err != nil {

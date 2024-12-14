@@ -19,15 +19,15 @@ type RoomStore interface {
 
 type MongoRoomStore struct {
 	client *mongo.Client
-	coll *mongo.Collection
+	coll   *mongo.Collection
 
 	HotelStore
 }
 
 func NewMongoRoomStore(client *mongo.Client, dbname string, hs HotelStore) *MongoRoomStore {
 	return &MongoRoomStore{
-		client: client,
-		coll: client.Database(dbname).Collection("rooms"),
+		client:     client,
+		coll:       client.Database(dbname).Collection("rooms"),
 		HotelStore: hs,
 	}
 }
@@ -51,7 +51,6 @@ func (s *MongoRoomStore) InsertRoom(ctx context.Context, room *types.Room) (*typ
 	if err := s.HotelStore.UpdateHotel(ctx, filter, update); err != nil {
 		return nil, err
 	}
-
 	return room, nil
 }
 
@@ -65,6 +64,5 @@ func (s *MongoRoomStore) GetRooms(ctx context.Context, filter bson.M) ([]*types.
 	if err := curr.All(ctx, &rooms); err != nil {
 		return nil, err
 	}
-
 	return rooms, nil
 }

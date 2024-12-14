@@ -11,28 +11,28 @@ import (
 
 const (
 	minFirstNameLen = 2
-	minLastNameLen = 2
-	minPasswordLen = 7
+	minLastNameLen  = 2
+	minPasswordLen  = 7
 )
 
 type User struct {
-	ID 			primitive.ObjectID 	`bson:"_id,omitempty" json:"id,omitempty"`
-	FirstName 	string 				`bson:"firstName" json:"firstName"`
-	LastName 	string 				`bson:"lastName" json:"lastName"`
-	Email 		string 				`bson:"email" json:"email"`
-	EncPassword string				`bson:"EncPassword" json:"-"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	FirstName   string             `bson:"firstName" json:"firstName"`
+	LastName    string             `bson:"lastName" json:"lastName"`
+	Email       string             `bson:"email" json:"email"`
+	EncPassword string             `bson:"EncPassword" json:"-"`
 }
 
 type CreateUserParams struct {
-	FirstName 	string 	`json:"firstName"`
-	LastName 	string 	`json:"lastName"`
-	Email 		string 	`json:"email"`
-	Password	string	`json:"password"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
 type UpdateUserParams struct {
-	FirstName 	string 	`json:"firstName"`
-	LastName 	string 	`json:"lastName"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 }
 
 func (p *UpdateUserParams) ToBSON() bson.M {
@@ -43,9 +43,8 @@ func (p *UpdateUserParams) ToBSON() bson.M {
 	if len(p.LastName) > 0 {
 		m["lastName"] = p.LastName
 	}
-	
 	return m
-} 
+}
 
 func NewUserFromParams(u *CreateUserParams) (*User, error) {
 	encpw, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
@@ -54,9 +53,9 @@ func NewUserFromParams(u *CreateUserParams) (*User, error) {
 	}
 
 	return &User{
-		FirstName: u.FirstName,
-		LastName: u.LastName,
-		Email: u.Email,
+		FirstName:   u.FirstName,
+		LastName:    u.LastName,
+		Email:       u.Email,
 		EncPassword: string(encpw),
 	}, nil
 }
@@ -75,7 +74,6 @@ func (u *CreateUserParams) Validate() map[string]string {
 	if !isEmailValid(u.Email) {
 		errors["email"] = fmt.Sprintf("email is invalid")
 	}
-
 	return errors
 }
 

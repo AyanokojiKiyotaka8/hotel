@@ -40,9 +40,9 @@ func main() {
 	hotelStore := db.NewMongoHotelStore(client, db.DBNAME)
 	roomStore := db.NewMongoRoomStore(client, db.DBNAME, hotelStore)
 	store := db.Store{
-		User: userStore,
+		User:  userStore,
 		Hotel: hotelStore,
-		Room: roomStore,
+		Room:  roomStore,
 	}
 
 	// Handlers

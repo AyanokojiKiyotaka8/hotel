@@ -36,7 +36,6 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 		}
 		return err
 	}
-
 	return c.JSON(user)
 }
 
@@ -58,7 +57,6 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
 	return c.JSON(insertedUser)
 }
 
@@ -68,7 +66,6 @@ func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
 	return c.JSON(users)
 }
 
@@ -83,7 +80,6 @@ func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 	if err := h.userStore.DeleteUser(c.Context(), filter); err != nil {
 		return err
 	}
-
 	return c.JSON(map[string]string{"deleted:": id})
 }
 
@@ -108,6 +104,5 @@ func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
 	return c.JSON(map[string]string{"updated:": id})
 }

@@ -26,13 +26,13 @@ func NewAuthHandler(userStore db.UserStore) *AuthHandler {
 }
 
 type AuthParams struct {
-	Email 		string `json:"email"`
-	Password 	string `json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type AuthResponse struct {
-	User 	*types.User `json:"user"`
-	Token 	string		`json:"token"`
+	User  *types.User `json:"user"`
+	Token string      `json:"token"`
 }
 
 type genericResp struct {
@@ -43,7 +43,7 @@ type genericResp struct {
 func invalidCredentials(c *fiber.Ctx) error {
 	return c.Status(http.StatusBadRequest).JSON(genericResp{
 		Type: "error",
-		Msg: "invalid credentials",
+		Msg:  "invalid credentials",
 	})
 }
 
@@ -67,20 +67,19 @@ func (h *AuthHandler) HandleAuth(c *fiber.Ctx) error {
 	}
 
 	resp := AuthResponse{
-		User: user,
+		User:  user,
 		Token: createToken(user),
 	}
-
 	return c.JSON(resp)
 }
 
 func createToken(user *types.User) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id": user.ID,
-		"email": user.Email,
+		"id":      user.ID,
+		"email":   user.Email,
 		"expires": time.Now().Add(3 * time.Hour).Unix(),
 	})
-	
+
 	tokenStr, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		fmt.Println(err)

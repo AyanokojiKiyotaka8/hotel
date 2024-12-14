@@ -26,13 +26,13 @@ type UserStore interface {
 
 type MongoUserStore struct {
 	client *mongo.Client
-	coll *mongo.Collection
+	coll   *mongo.Collection
 }
 
 func NewMongoUserStore(client *mongo.Client, dbname string) *MongoUserStore {
 	return &MongoUserStore{
 		client: client,
-		coll: client.Database(dbname).Collection("users"),
+		coll:   client.Database(dbname).Collection("users"),
 	}
 }
 
@@ -46,7 +46,6 @@ func (s *MongoUserStore) GetUser(ctx context.Context, filter bson.M) (*types.Use
 	if err := s.coll.FindOne(ctx, filter).Decode(&user); err != nil {
 		return nil, err
 	}
-
 	return &user, nil
 }
 
@@ -70,7 +69,6 @@ func (s *MongoUserStore) GetUsers(ctx context.Context, filter bson.M) ([]*types.
 	if err := cur.All(ctx, &users); err != nil {
 		return nil, err
 	}
-
 	return users, nil
 }
 

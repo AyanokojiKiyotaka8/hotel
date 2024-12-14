@@ -21,13 +21,13 @@ type HotelStore interface {
 
 type MongoHotelStore struct {
 	client *mongo.Client
-	coll *mongo.Collection
+	coll   *mongo.Collection
 }
 
 func NewMongoHotelStore(client *mongo.Client, dbname string) *MongoHotelStore {
 	return &MongoHotelStore{
 		client: client,
-		coll: client.Database(dbname).Collection("hotels"),
+		coll:   client.Database(dbname).Collection("hotels"),
 	}
 }
 
@@ -61,7 +61,6 @@ func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M) ([]*type
 	if err := curr.All(ctx, &hotels); err != nil {
 		return nil, err
 	}
-
 	return hotels, nil
 }
 
@@ -70,6 +69,5 @@ func (s *MongoHotelStore) GetHotel(ctx context.Context, filter bson.M) (*types.H
 	if err := s.coll.FindOne(ctx, filter).Decode(&hotel); err != nil {
 		return nil, err
 	}
-
 	return hotel, nil
 }

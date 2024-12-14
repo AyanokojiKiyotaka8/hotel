@@ -16,15 +16,15 @@ import (
 
 func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
 	user, err := types.NewUserFromParams(&types.CreateUserParams{
-		Email: "james@foo.com",
-		Password: "verystrongpassword",
+		Email:     "james@foo.com",
+		Password:  "verystrongpassword",
 		FirstName: "james",
-		LastName: "foo",
+		LastName:  "foo",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	_, err = userStore.InsertUser(context.TODO(), user)
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +42,7 @@ func TestAuthenticateWithWrongPassword(t *testing.T) {
 	app.Post("/auth", authHandler.HandleAuth)
 
 	params := AuthParams{
-		Email: "james@foo.com",
+		Email:    "james@foo.com",
 		Password: "verystrongpasswordnotcorrect",
 	}
 
@@ -79,7 +79,7 @@ func TestAuthenticateSuccess(t *testing.T) {
 	app.Post("/auth", authHandler.HandleAuth)
 
 	params := AuthParams{
-		Email: "james@foo.com",
+		Email:    "james@foo.com",
 		Password: "verystrongpassword",
 	}
 

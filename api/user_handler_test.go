@@ -46,10 +46,10 @@ func TestPostUser(t *testing.T) {
 	app.Post("/", userHandler.HandlePostUser)
 
 	params := types.CreateUserParams{
-		Email: "some@foo.com",
+		Email:     "some@foo.com",
 		FirstName: "James",
-		LastName: "Foo",
-		Password: "wertyuio",
+		LastName:  "Foo",
+		Password:  "wertyuio",
 	}
 
 	b, _ := json.Marshal(params)
@@ -58,7 +58,7 @@ func TestPostUser(t *testing.T) {
 
 	resp, _ := app.Test(req)
 	fmt.Println(resp.Status)
-	
+
 	var user types.User
 	json.NewDecoder(resp.Body).Decode(&user)
 	fmt.Println(user)
@@ -68,7 +68,7 @@ func TestPostUser(t *testing.T) {
 	}
 	if len(user.EncPassword) > 0 {
 		t.Errorf("expecting a EncryptedPassword not to be included in json")
-	} 
+	}
 	if params.FirstName != user.FirstName {
 		t.Errorf("expected firstname %s but got %s", params.FirstName, user.FirstName)
 	}
