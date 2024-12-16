@@ -76,6 +76,7 @@ func main() {
 
 	// Booking API with user auth required
 	apiv1.Get("/booking/:id", bookingHandler.HandleGetBooking)
+	apiv1.Get("/booking/:id/cancel", bookingHandler.HandleCancelBooking)
 
 	// Booking API with admin auth required
 	admin.Get("/booking", bookingHandler.HandleGetBookings)

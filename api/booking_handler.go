@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/db"
@@ -49,7 +50,7 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 
 	user, ok := c.Context().UserValue("user").(*types.User)
 	if !ok {
-		return err
+		return fmt.Errorf("unauthorized")
 	}
 	if booking.UserID != user.ID {
 		return c.Status(http.StatusUnauthorized).JSON(genericResp{
@@ -58,4 +59,44 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(booking)
+}
+
+func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
+	id := c.Params("id")
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": oid}
+	update := bson.M{
+		"$set": bson.M{
+			"canceled": true,
+		},
+	}
+
+	booking, err := h.store.Booking.GetBooking(c.Context(), filter)
+	if err != nil {
+		return err
+	}
+
+	user, ok := c.Context().UserValue("user").(*types.User)
+	if !ok {
+		return fmt.Errorf("unauthorized")
+	}
+	if booking.UserID != user.ID {
+		return c.Status(http.StatusUnauthorized).JSON(genericResp{
+			Type: "error",
+			Msg:  "unauthorized",
+		})
+	}
+
+	err = h.store.Booking.UpdateBooking(c.Context(), filter, update)
+	if err != nil {
+		return err
+	}
+	return c.JSON(genericResp{
+		Type: "msg",
+		Msg:  "canceled",
+	})
 }
