@@ -68,12 +68,12 @@ func (h *AuthHandler) HandleAuth(c *fiber.Ctx) error {
 
 	resp := AuthResponse{
 		User:  user,
-		Token: createToken(user),
+		Token: CreateToken(user),
 	}
 	return c.JSON(resp)
 }
 
-func createToken(user *types.User) string {
+func CreateToken(user *types.User) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":      user.ID,
 		"email":   user.Email,

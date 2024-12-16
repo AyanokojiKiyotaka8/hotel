@@ -2,57 +2,39 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 
-	"github.com/AyanokojiKiyotaka8/booking.git/db"
-	"github.com/AyanokojiKiyotaka8/booking.git/types"
+	"github.com/AyanokojiKiyotaka8/booking.git/db/fixtures"
 	"github.com/gofiber/fiber/v2"
 )
-
-func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
-	user, err := types.NewUserFromParams(&types.CreateUserParams{
-		Email:     "james@foo.com",
-		Password:  "verystrongpassword",
-		FirstName: "james",
-		LastName:  "foo",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = userStore.InsertUser(context.TODO(), user)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return user
-}
 
 func TestAuthenticateWithWrongPassword(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
-	insertTestUser(t, tdb.UserStore)
+	fixtures.AddUser(tdb.Store, "aaa", "bbb", false)
 
 	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
+	authHandler := NewAuthHandler(tdb.Store.User)
 	app.Post("/auth", authHandler.HandleAuth)
 
 	params := AuthParams{
-		Email:    "james@foo.com",
-		Password: "verystrongpasswordnotcorrect",
+		Email:    "aaa@bbb.com",
+		Password: "aaa_bbb_wrong",
 	}
 
 	b, _ := json.Marshal(params)
 	req := httptest.NewRequest("POST", "/auth", bytes.NewReader(b))
 	req.Header.Add("Content-Type", "application/json")
+
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("expected https status code of 400 but got %d", resp.StatusCode)
 	}
@@ -72,20 +54,21 @@ func TestAuthenticateWithWrongPassword(t *testing.T) {
 func TestAuthenticateSuccess(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
-	insertedUser := insertTestUser(t, tdb.UserStore)
+	insertedUser := fixtures.AddUser(tdb.Store, "aaa", "bbb", false)
 
 	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
+	authHandler := NewAuthHandler(tdb.Store.User)
 	app.Post("/auth", authHandler.HandleAuth)
 
 	params := AuthParams{
-		Email:    "james@foo.com",
-		Password: "verystrongpassword",
+		Email:    "aaa@bbb.com",
+		Password: "aaa_bbb",
 	}
 
 	b, _ := json.Marshal(params)
 	req := httptest.NewRequest("POST", "/auth", bytes.NewReader(b))
 	req.Header.Add("Content-Type", "application/json")
+
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatal(err)

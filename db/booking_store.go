@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,6 +11,8 @@ import (
 )
 
 type BookingStore interface {
+	Dropper
+
 	InsertBooking(context.Context, *types.Booking) (*types.Booking, error)
 	GetBookings(context.Context, bson.M) ([]*types.Booking, error)
 	GetBooking(context.Context, bson.M) (*types.Booking, error)
@@ -26,6 +29,11 @@ func NewMongoBookingStore(client *mongo.Client, dbname string) *MongoBookingStor
 		client: client,
 		coll:   client.Database(dbname).Collection("bookings"),
 	}
+}
+
+func (s *MongoBookingStore) Drop(ctx context.Context) error {
+	fmt.Println("---- dropping the booking collection ----")
+	return s.coll.Drop(ctx)
 }
 
 func (s *MongoBookingStore) InsertBooking(ctx context.Context, booking *types.Booking) (*types.Booking, error) {
