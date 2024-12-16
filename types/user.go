@@ -21,6 +21,7 @@ type User struct {
 	LastName    string             `bson:"lastName" json:"lastName"`
 	Email       string             `bson:"email" json:"email"`
 	EncPassword string             `bson:"EncPassword" json:"-"`
+	IsAdmin     bool               `bson:"isAdmin" json:"isAdmin"`
 }
 
 type CreateUserParams struct {

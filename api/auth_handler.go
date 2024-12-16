@@ -77,7 +77,7 @@ func createToken(user *types.User) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":      user.ID,
 		"email":   user.Email,
-		"expires": time.Now().Add(3 * time.Hour).Unix(),
+		"expires": time.Now().Add(300 * time.Hour).Unix(),
 	})
 
 	tokenStr, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))

@@ -1,0 +1,61 @@
+package api
+
+import (
+	"errors"
+	"net/http"
+
+	"github.com/AyanokojiKiyotaka8/booking.git/db"
+	"github.com/AyanokojiKiyotaka8/booking.git/types"
+	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+type BookingHandler struct {
+	store *db.Store
+}
+
+func NewBookingHandler(store *db.Store) *BookingHandler {
+	return &BookingHandler{
+		store: store,
+	}
+}
+
+func (h *BookingHandler) HandleGetBookings(c *fiber.Ctx) error {
+	filter := bson.M{}
+	bookings, err := h.store.Booking.GetBookings(c.Context(), filter)
+	if err != nil {
+		return err
+	}
+	return c.JSON(bookings)
+}
+
+func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
+	id := c.Params("id")
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": oid}
+	booking, err := h.store.Booking.GetBooking(c.Context(), filter)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return c.JSON(map[string]string{"error:": "not found"})
+		}
+		return err
+	}
+
+	user, ok := c.Context().UserValue("user").(*types.User)
+	if !ok {
+		return err
+	}
+	if booking.UserID != user.ID {
+		return c.Status(http.StatusUnauthorized).JSON(genericResp{
+			Type: "error",
+			Msg:  "unauthorized",
+		})
+	}
+	return c.JSON(booking)
+}
