@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/api"
@@ -56,4 +57,8 @@ func main() {
 
 	booking := fixtures.AddBooking(store, user.ID, room.ID, 7, time.Now(), time.Now().AddDate(0, 0, 7))
 	fmt.Println(booking)
+
+	for i := 0; i < 100; i++ {
+		_ = fixtures.AddHotel(store, fmt.Sprintf("Hotel %d", i), "www", nil, rand.Intn(10))
+	}
 }

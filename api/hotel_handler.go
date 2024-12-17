@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type HotelHandler struct {
@@ -17,13 +18,39 @@ func NewHotelHandler(store *db.Store) *HotelHandler {
 	}
 }
 
+type ResultResp struct {
+	Data    any   `json:"data"`
+	Results int   `json:"results"`
+	Page    int64 `json:"page"`
+}
+
+type HotelQueryParams struct {
+	db.Pagination
+	Rating int
+}
+
 func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
-	filter := bson.M{}
-	hotels, err := h.store.Hotel.GetHotels(c.Context(), filter)
+	var params HotelQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return ErrBadRequest()
+	}
+
+	filter := bson.M{"rating": params.Rating}
+	opts := &options.FindOptions{}
+	opts.SetSkip((params.Page - 1) * params.Limit)
+	opts.SetLimit(params.Limit)
+
+	hotels, err := h.store.Hotel.GetHotels(c.Context(), filter, opts)
 	if err != nil {
 		return ErrResourceNotFound("hotel")
 	}
-	return c.JSON(hotels)
+
+	res := ResultResp{
+		Data:    hotels,
+		Results: len(hotels),
+		Page:    params.Page,
+	}
+	return c.JSON(res)
 }
 
 func (h *HotelHandler) HandleGetHotel(c *fiber.Ctx) error {
