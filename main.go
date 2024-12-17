@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
+	"os"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/api"
 	"github.com/AyanokojiKiyotaka8/booking.git/db"
@@ -12,15 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var config = fiber.Config{
-	ErrorHandler: api.ErrorHandler,
-}
-
 func main() {
-	// Server addresses
-	listenAddr := flag.String("listenAddr", ":3000", "The listen address of the API server")
-	flag.Parse()
-
 	// Database clients
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(db.DBURI))
 	if err != nil {
@@ -47,7 +39,7 @@ func main() {
 	bookingHandler := api.NewBookingHandler(&store)
 
 	// App and API's
-	app := fiber.New(config)
+	app := fiber.New(fiber.Config{ErrorHandler: api.ErrorHandler})
 	apiv1 := app.Group("/api/v1", api.JWTAuthentication(userStore))
 	auth := app.Group("/api")
 	admin := apiv1.Group("/admin", api.AdminAuth)
@@ -78,5 +70,9 @@ func main() {
 	// Booking API with admin auth required
 	admin.Get("/booking", bookingHandler.HandleGetBookings)
 
-	app.Listen(*listenAddr)
+	app.Listen(os.Getenv("HTTP_LISTEN_ADDRESS"))
+}
+
+func init() {
+	db.LoadConfig()
 }

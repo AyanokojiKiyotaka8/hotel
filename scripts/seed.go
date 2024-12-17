@@ -62,3 +62,7 @@ func main() {
 		_ = fixtures.AddHotel(store, fmt.Sprintf("Hotel %d", i), "www", nil, rand.Intn(10))
 	}
 }
+
+func init() {
+	db.LoadConfig()
+}
