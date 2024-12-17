@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/db/fixtures"
-	"github.com/AyanokojiKiyotaka8/booking.git/middleware"
 	"github.com/AyanokojiKiyotaka8/booking.git/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,8 +23,8 @@ func TestUserGetBooking(t *testing.T) {
 		hotel          = fixtures.AddHotel(tdb.Store, "qqq", "www", nil, 7)
 		room           = fixtures.AddRoom(tdb.Store, "large", 100.00, true, hotel.ID)
 		booking        = fixtures.AddBooking(tdb.Store, user.ID, room.ID, 7, time.Now(), time.Now().AddDate(0, 0, 7))
-		app            = fiber.New()
-		route          = app.Group("/", middleware.JWTAuthentication(tdb.Store.User))
+		app            = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
+		route          = app.Group("/", JWTAuthentication(tdb.Store.User))
 		bookingHandler = NewBookingHandler(tdb.Store)
 	)
 	route.Get("/:id", bookingHandler.HandleGetBooking)
@@ -73,8 +72,8 @@ func TestAdminGetBookings(t *testing.T) {
 		hotel          = fixtures.AddHotel(tdb.Store, "qqq", "www", nil, 7)
 		room           = fixtures.AddRoom(tdb.Store, "large", 100.00, true, hotel.ID)
 		booking        = fixtures.AddBooking(tdb.Store, user.ID, room.ID, 7, time.Now(), time.Now().AddDate(0, 0, 7))
-		app            = fiber.New()
-		admin          = app.Group("/", middleware.JWTAuthentication(tdb.Store.User), middleware.AdminAuth)
+		app            = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
+		admin          = app.Group("/", JWTAuthentication(tdb.Store.User), AdminAuth)
 		bookingHandler = NewBookingHandler(tdb.Store)
 	)
 	admin.Get("/", bookingHandler.HandleGetBookings)
@@ -110,7 +109,7 @@ func TestAdminGetBookings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode == http.StatusOK {
-		t.Fatalf("expected a non 200 response got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("expected a status unauthorized but got %d", resp.StatusCode)
 	}
 }

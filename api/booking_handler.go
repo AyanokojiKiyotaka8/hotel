@@ -2,8 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/AyanokojiKiyotaka8/booking.git/db"
 	"github.com/AyanokojiKiyotaka8/booking.git/types"
@@ -27,7 +25,7 @@ func (h *BookingHandler) HandleGetBookings(c *fiber.Ctx) error {
 	filter := bson.M{}
 	bookings, err := h.store.Booking.GetBookings(c.Context(), filter)
 	if err != nil {
-		return err
+		return ErrResourceNotFound("booking")
 	}
 	return c.JSON(bookings)
 }
@@ -45,18 +43,15 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return c.JSON(map[string]string{"error:": "not found"})
 		}
-		return err
+		return ErrResourceNotFound("booking")
 	}
 
 	user, ok := c.Context().UserValue("user").(*types.User)
 	if !ok {
-		return fmt.Errorf("unauthorized")
+		return ErrUnauthorized()
 	}
 	if booking.UserID != user.ID {
-		return c.Status(http.StatusUnauthorized).JSON(genericResp{
-			Type: "error",
-			Msg:  "unauthorized",
-		})
+		return ErrUnauthorized()
 	}
 	return c.JSON(booking)
 }
@@ -65,7 +60,7 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrResourceNotFound("booking")
 	}
 
 	filter := bson.M{"_id": oid}
@@ -82,13 +77,10 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 
 	user, ok := c.Context().UserValue("user").(*types.User)
 	if !ok {
-		return fmt.Errorf("unauthorized")
+		return ErrUnauthorized()
 	}
 	if booking.UserID != user.ID {
-		return c.Status(http.StatusUnauthorized).JSON(genericResp{
-			Type: "error",
-			Msg:  "unauthorized",
-		})
+		return ErrUnauthorized()
 	}
 
 	err = h.store.Booking.UpdateBooking(c.Context(), filter, update)
