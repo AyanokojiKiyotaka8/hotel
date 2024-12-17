@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/AyanokojiKiyotaka8/booking.git/db"
 	"github.com/AyanokojiKiyotaka8/booking.git/db/fixtures"
 	"github.com/gofiber/fiber/v2"
 )
@@ -89,4 +90,8 @@ func TestAuthenticateSuccess(t *testing.T) {
 	if !reflect.DeepEqual(insertedUser, authResp.User) {
 		t.Fatalf("expected user to be inserted user")
 	}
+}
+
+func init() {
+	db.LoadConfig()
 }

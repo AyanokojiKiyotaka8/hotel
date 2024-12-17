@@ -38,3 +38,7 @@ func setup(t *testing.T) *testdb {
 		},
 	}
 }
+
+func init() {
+	db.LoadConfig()
+}

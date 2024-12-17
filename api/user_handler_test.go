@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/AyanokojiKiyotaka8/booking.git/db"
 	"github.com/AyanokojiKiyotaka8/booking.git/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -48,4 +49,8 @@ func TestPostUser(t *testing.T) {
 	if params.Email != user.Email {
 		t.Errorf("expected email %s but got %s", params.Email, user.Email)
 	}
+}
+
+func init() {
+	db.LoadConfig()
 }

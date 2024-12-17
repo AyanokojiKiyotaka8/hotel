@@ -26,6 +26,7 @@ type Store struct {
 }
 
 func LoadConfig() {
+	// if testing then add "../.env" into Load()
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AyanokojiKiyotaka8/booking.git/db"
 	"github.com/AyanokojiKiyotaka8/booking.git/db/fixtures"
 	"github.com/AyanokojiKiyotaka8/booking.git/types"
 	"github.com/gofiber/fiber/v2"
@@ -112,4 +113,8 @@ func TestAdminGetBookings(t *testing.T) {
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("expected a status unauthorized but got %d", resp.StatusCode)
 	}
+}
+
+func init() {
+	db.LoadConfig()
 }
