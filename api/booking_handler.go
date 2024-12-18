@@ -34,7 +34,7 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrResourceNotFound("booking")
 	}
 
 	filter := bson.M{"_id": oid}

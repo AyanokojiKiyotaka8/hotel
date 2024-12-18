@@ -25,7 +25,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrInvalidID()
 	}
 
 	filter := bson.M{"_id": oid}
@@ -34,7 +34,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return c.JSON(map[string]string{"error:": "not found"})
 		}
-		return err
+		return ErrResourceNotFound("user")
 	}
 	return c.JSON(user)
 }
@@ -73,7 +73,7 @@ func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrInvalidID()
 	}
 
 	filter := bson.M{"_id": oid}
